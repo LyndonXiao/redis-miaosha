@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+    <form id='order'>
+        <button id="start" type="button">开始</button>
+        <button id="stop" type="button">停止</button>
+    </form>
+    <script src="https://cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+    <script>
+        $(function () {
+            var intval = null;
+            $('#start').on('click', function () {
+                var i = 0;
+                intval = setInterval(function () {
+                    new ajax(i).ajax();
+                    i++;
+                }, 0)
+            });
+            $('#stop').on('click', function () {
+                clearInterval(intval);
+            })
+
+            function ajax(e) {
+                var i = e;
+                this.ajax = function () {
+                    $.ajax({
+                        url: '/order?_csrf={{ ctx.csrf | safe }}',
+                        data: { user: i },
+                        method: 'post',
+                        success: function (res) {
+                            if (res.status === 200) {
+                                console.log('用户' + i + '下单:' + res.data.time);
+                            }
+                            if (res.status === 200 && i % 2 === 0) {
+                                $.ajax({
+                                    url: '/cancel?_csrf={{ ctx.csrf | safe }}',
+                                    data: { user: i, index: res.data.index },
+                                    method: 'post',
+                                    success: function (res) {
+                                        if (res.status === 200) {
+                                            console.log('用户' + i + '取消:' + res.data.time);
+                                        }
+                                    }
+                                })
+                            }
+                        }
+                    })
+                }
+            }
+        });
+    </script
+</body>
+
+</html>
